@@ -1,37 +1,77 @@
 import type { Digit } from '../lib/sudoku'
 
+export type NumberPadVariant = 'digit' | 'note'
+
 type Props = {
+  variant: NumberPadVariant
   onDigit: (digit: Digit) => void
   onClear: () => void
   disabled?: boolean
 }
 
-const DIGITS: Digit[] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+/** Classic numpad order: 7–9 top row, 1–3 bottom row */
+const NUMPAD_ROWS: Digit[][] = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+]
 
-export function NumberPad({ onDigit, onClear, disabled }: Props) {
+const variantStyles: Record<
+  NumberPadVariant,
+  { key: string; clear: string; label: string; clearLabel: string }
+> = {
+  digit: {
+    key: 'bg-slate-700 text-slate-100 hover:bg-slate-600',
+    clear: 'bg-slate-700/80 text-slate-300 hover:bg-slate-600',
+    label: 'Digit pad',
+    clearLabel: 'Clear',
+  },
+  note: {
+    key: 'bg-amber-900/80 text-amber-100 hover:bg-amber-800/90',
+    clear: 'bg-amber-900/60 text-amber-200/90 hover:bg-amber-800/80',
+    label: 'Note pad',
+    clearLabel: 'Clear',
+  },
+}
+
+export function NumberPad({ variant, onDigit, onClear, disabled }: Props) {
+  const styles = variantStyles[variant]
+  const keyClass = `aspect-square items-center justify-center rounded-lg text-lg font-bold transition active:scale-95 disabled:opacity-40 ${styles.key}`
+
   return (
-    <div className="flex w-full max-w-[min(90dvw,90dvh)] flex-col gap-2">
-      <div className="grid grid-cols-9 gap-1.5">
-        {DIGITS.map((d) => (
+    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <span className="text-start text-base font-medium text-slate-500">
+        {variant === 'digit' ? 'Digits' : 'Notes'}
+      </span>
+      <div
+        className="grid grid-cols-3 gap-1"
+        role="group"
+        aria-label={styles.label}
+      >
+        {NUMPAD_ROWS.map((row) =>
+          row.map((d) => (
+            <button
+              key={d}
+              type="button"
+              disabled={disabled}
+              onClick={() => onDigit(d)}
+              className={keyClass}
+            >
+              {d}
+            </button>
+          )),
+        )}
+        <div className="col-span-3">
           <button
-            key={d}
             type="button"
             disabled={disabled}
-            onClick={() => onDigit(d)}
-            className="aspect-square rounded-lg bg-slate-700 text-lg font-semibold text-slate-100 transition hover:bg-slate-600 active:scale-95 disabled:opacity-40 sm:text-xl"
+            onClick={onClear}
+            className={`flex aspect-[8/2] w-full items-center justify-center rounded-lg text-base font-bold transition active:scale-[0.99] disabled:opacity-40  ${styles.clear}`}
           >
-            {d}
+            {styles.clearLabel}
           </button>
-        ))}
+        </div>
       </div>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onClear}
-        className="rounded-lg bg-slate-700/80 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-600 disabled:opacity-40"
-      >
-        Clear cell
-      </button>
     </div>
   )
 }

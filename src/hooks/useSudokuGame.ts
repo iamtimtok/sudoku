@@ -19,7 +19,6 @@ type SavedGame = {
   notes: Record<string, number[]>
   difficulty: Difficulty
   selected: [number, number] | null
-  notesMode: boolean
   startedAt: number
 }
 
@@ -31,7 +30,6 @@ type GameState = {
   givens: boolean[][]
   notes: Record<string, number[]>
   selected: [number, number] | null
-  notesMode: boolean
   startedAt: number
 }
 
@@ -63,7 +61,6 @@ function createInitialState(difficulty: Difficulty = 'medium'): GameState {
     givens: puzzle.map((row) => row.map((cell) => cell !== 0)),
     notes: {},
     selected: null,
-    notesMode: false,
     startedAt: Date.now(),
   }
 }
@@ -77,7 +74,6 @@ function stateFromSaved(saved: SavedGame): GameState {
     givens: saved.puzzle.map((row) => row.map((cell) => cell !== 0)),
     notes: saved.notes,
     selected: saved.selected,
-    notesMode: saved.notesMode,
     startedAt: saved.startedAt,
   }
 }
@@ -98,7 +94,6 @@ export function useSudokuGame() {
     givens,
     notes,
     selected,
-    notesMode,
     startedAt,
   } = game
 
@@ -110,10 +105,9 @@ export function useSudokuGame() {
       notes,
       difficulty,
       selected,
-      notesMode,
       startedAt,
     })
-  }, [puzzle, solution, player, notes, difficulty, selected, notesMode, startedAt])
+  }, [puzzle, solution, player, notes, difficulty, selected, startedAt])
 
   const conflicts = useMemo(() => getAllConflicts(player), [player])
   const isComplete = useMemo(
@@ -133,16 +127,6 @@ export function useSudokuGame() {
   const setSelected = useCallback((cell: [number, number] | null) => {
     setGame((prev) => ({ ...prev, selected: cell }))
   }, [])
-
-  const setNotesMode = useCallback(
-    (value: boolean | ((prev: boolean) => boolean)) => {
-      setGame((prev) => ({
-        ...prev,
-        notesMode: typeof value === 'function' ? value(prev.notesMode) : value,
-      }))
-    },
-    [],
-  )
 
   const setCell = useCallback((row: number, col: number, value: CellValue) => {
     setGame((prev) => {
@@ -178,18 +162,24 @@ export function useSudokuGame() {
     })
   }, [])
 
-  const applyDigit = useCallback(
+  const fillDigit = useCallback(
     (digit: Digit) => {
       if (!selected) return
       const [row, col] = selected
       if (givens[row][col]) return
-      if (notesMode) {
-        toggleNote(row, col, digit)
-      } else {
-        setCell(row, col, player[row][col] === digit ? 0 : digit)
-      }
+      setCell(row, col, player[row][col] === digit ? 0 : digit)
     },
-    [selected, givens, notesMode, player, setCell, toggleNote],
+    [selected, givens, player, setCell],
+  )
+
+  const applyNote = useCallback(
+    (digit: Digit) => {
+      if (!selected) return
+      const [row, col] = selected
+      if (givens[row][col]) return
+      toggleNote(row, col, digit)
+    },
+    [selected, givens, toggleNote],
   )
 
   const clearCell = useCallback(() => {
@@ -203,6 +193,19 @@ export function useSudokuGame() {
       const { [key]: removed, ...restNotes } = prev.notes
       void removed
       return { ...prev, player, notes: restNotes }
+    })
+  }, [selected, givens])
+
+  const clearNotes = useCallback(() => {
+    if (!selected) return
+    const [row, col] = selected
+    if (givens[row][col]) return
+    setGame((prev) => {
+      const key = notesKey(row, col)
+      if (!(key in prev.notes)) return prev
+      const { [key]: removed, ...restNotes } = prev.notes
+      void removed
+      return { ...prev, notes: restNotes }
     })
   }, [selected, givens])
 
@@ -226,16 +229,16 @@ export function useSudokuGame() {
     givens,
     notes,
     selected,
-    notesMode,
     conflicts,
     isComplete,
     elapsed,
     newGame,
     setDifficulty,
     setSelected,
-    setNotesMode,
-    applyDigit,
+    fillDigit,
+    applyNote,
     clearCell,
+    clearNotes,
     moveSelection,
   }
 }

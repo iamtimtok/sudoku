@@ -46,12 +46,12 @@ export function SudokuCell({
           ? `Row ${row + 1} column ${col + 1}, ${value}`
           : `Row ${row + 1} column ${col + 1}, empty`
       }
-      className={`relative flex items-center justify-center border ${borderClasses(row, col)} ${bg} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-inset`}
+      className={`relative flex aspect-square items-center justify-center border ${borderClasses(row, col)} ${bg} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-inset`}
       onClick={onSelect}
     >
       {value !== 0 ? (
         <span
-          className={`text-[clamp(1rem,4.5vmin,2.5rem)] font-semibold leading-none ${
+          className={`text-[clamp(1rem,4.5vmin,2.5rem)] aspect-square font-semibold leading-none ${
             isGiven
               ? 'text-slate-100'
               : hasConflict
@@ -62,7 +62,7 @@ export function SudokuCell({
           {value}
         </span>
       ) : notes && notes.length > 0 ? (
-        <span className="grid h-full w-full grid-cols-3 grid-rows-3 gap-px p-0.5">
+        <span className="grid grid-cols-3 grid-rows-3 gap-px p-0.5">
           {Array.from({ length: 9 }, (_, i) => {
             const digit = i + 1
             const show = notes.includes(digit)

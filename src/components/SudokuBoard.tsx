@@ -31,11 +31,11 @@ export function SudokuBoard({
 
   return (
     <div
-      className="aspect-square w-full max-w-[min(90dvw,90dvh)] select-none rounded-lg border-4 border-slate-600 bg-slate-800 shadow-2xl shadow-black/40"
+      className="flex flex-row w-full aspect-square select-none rounded-lg border-4 border-slate-600 bg-slate-800 shadow-2xl shadow-black/40"
       role="grid"
       aria-label="Sudoku board"
     >
-      <div className="grid h-full w-full grid-cols-9 grid-rows-9">
+      <div className="flex-1 grid grid-cols-9 grid-rows-9">
         {player.map((row, r) =>
           row.map((value, c) => {
             const key = cellKey(r, c)

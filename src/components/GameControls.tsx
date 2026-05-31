@@ -2,12 +2,9 @@ import type { Difficulty } from '../lib/sudoku'
 
 type Props = {
   difficulty: Difficulty
-  notesMode: boolean
   elapsed: number
   isComplete: boolean
   onDifficultyChange: (d: Difficulty) => void
-  onNotesModeToggle: () => void
-  onNewGame: () => void
 }
 
 const DIFFICULTIES: { value: Difficulty; label: string }[] = [
@@ -22,20 +19,19 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export function GameControls({
+export function GameHeader({
   difficulty,
-  notesMode,
   elapsed,
   isComplete,
-  onDifficultyChange,
-  onNotesModeToggle,
-  onNewGame,
-}: Props) {
+}: Pick<Props, 'difficulty' | 'elapsed' | 'isComplete'>) {
   return (
     <header className="flex w-full max-w-[min(90dvw,90dvh)] flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-bold tracking-tight text-slate-100 sm:text-2xl">
-          Sudoku
+          Sudoku{' '}
+          <span className="text-base font-semibold text-slate-400 sm:text-lg">
+            ({DIFFICULTIES.find((d) => d.value === difficulty)?.label ?? difficulty})
+          </span>
         </h1>
         <span className="tabular-nums text-sm text-slate-400">
           {formatTime(elapsed)}
@@ -47,45 +43,30 @@ export function GameControls({
           Puzzle complete!
         </p>
       )}
-
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-lg bg-slate-800 p-0.5">
-          {DIFFICULTIES.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onDifficultyChange(value)}
-              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition sm:px-3 sm:text-sm ${
-                difficulty === value
-                  ? 'bg-sky-600 text-white'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={onNotesModeToggle}
-          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition sm:text-sm ${
-            notesMode
-              ? 'bg-amber-600 text-white'
-              : 'bg-slate-800 text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Notes {notesMode ? 'on' : 'off'}
-        </button>
-
-        <button
-          type="button"
-          onClick={onNewGame}
-          className="ml-auto rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-slate-600 sm:text-sm"
-        >
-          New game
-        </button>
-      </div>
     </header>
+  )
+}
+
+export function GameControls({
+  onDifficultyChange,
+}: Pick<Props, 'onDifficultyChange'>) {
+  return (
+    <div className="flex w-full flex-wrap justify-center items-center gap-2">
+      <span className="text-sm font-medium text-slate-300 sm:text-sm">
+        New game:
+      </span>
+      <div className="flex rounded-lg bg-slate-800 p-0.5">
+        {DIFFICULTIES.map(({ value, label }) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onDifficultyChange(value)}
+            className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-700/60 hover:text-slate-100 sm:px-3 sm:text-sm"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
